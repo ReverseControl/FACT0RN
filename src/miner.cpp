@@ -160,6 +160,18 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     // Fill in header
     pblock->hashPrevBlock       = pindexPrev->GetBlockHash();
     UpdateTime(pblock, chainparams.GetConsensus(), pindexPrev);
+
+    for( uint16_t jj=1; jj < 2048; jj++ ){
+        pblock->nBits               = jj;
+        pblock->nNonce              = 0;
+        pblock->wOffset             = 0;
+        pblock->nP1                 = uint1024S("0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001") << ( (pblock->nBits >> 1) + (pblock->nBits & 1) - 1 );
+  
+        if ( pblock->nP1.bits() != ( (jj/2) + (jj&1)) ) {
+            std::cout << "FAILURE." << " Expected: " <<  ( (jj/2) + (jj&1)) << " Actual: " << pblock->nP1.bits()  << std::endl;
+        }
+    }
+
     pblock->nBits               = GetNextWorkRequired(pindexPrev, pblock, chainparams.GetConsensus());
     pblock->nNonce              = 0;
     pblock->wOffset             = 0;
