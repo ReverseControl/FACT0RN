@@ -641,16 +641,22 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                     //
                     // Notes: Inputs are always interpreted as positive integers.
                     //
+                    //  Conditions: 1. N must not be zero.
+                    //              2. P must not be 0.
+                    //              3. P must not be 1.
+                    //              4. P must not be equalt to N.
+                    //
+                    //  Any inputs violating these conditions will result in an error.
                     if (stack.size() < 2)
                         return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
 
                     //Retrieve P and do validation
                     mpz_t p;
                     mpz_init(p);
-                    mpz_import( p, stacktop(-1).size(), -1, sizeof(char), 0, 0, &(stacktop(-1)[0]) );
+                    mpz_import( p, stacktop(-2).size(), -1, sizeof(char), 0, 0, &(stacktop(-2)[0]) );
 
-                    //Check that p != 0
-                    if( mpz_cmp_ui( p, 0) == 0){
+                    //If (p == 0) or (p == 1) return error.
+                    if( (mpz_cmp_ui( p, 0) == 0) || (mpz_cmp_ui( p, 1) == 0)  ){
                        mpz_clear(p);
                        return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
                     }
@@ -658,19 +664,31 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                     //Retrieve N
                     mpz_t n;
                     mpz_init(n);
-                    mpz_import( n, stacktop(-2).size(), -1, sizeof(char), 0, 0, &(stacktop(-2)[0]));
+                    mpz_import( n, stacktop(-1).size(), -1, sizeof(char), 0, 0, &(stacktop(-1)[0]));
+
+                    //Return error if N == 0 or  N == P
+                    if( (mpz_cmp_ui(n,0) == 0) || (mpz_cmp(n,p) == 0) ){
+                        mpz_clear(p);
+                        mpz_clear(n);
+                        return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
+                    }
 
                     //Perform operation
                     mpz_t result;
                     mpz_init(result);
                     mpz_mod( result, n, p);
 
+                    //Print inputs
+                    gmp_printf("P value: %Zd \n", p);
+                    gmp_printf("N value: %Zd \n", n);
+                    gmp_printf("N Mod P: %Zd \n", result);
+
                     //Clear GMP managed allocated memory
                     mpz_clear(n);
                     mpz_clear(p);
 
                     //Check to see if p divides n, or equivalently that n Mod p == 0
-                    unsigned char retValue = (mpz_cmp_ui( result, 0 ) == 0);
+                    unsigned char retValue = (mpz_cmp_ui( result, 0 ) == 0) ? 1 : 0;
 
                     //Clear GMP managed allocated memory
                     mpz_clear(result);
