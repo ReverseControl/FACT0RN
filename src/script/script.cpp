@@ -132,8 +132,8 @@ std::string GetOpName(opcodetype opcode)
     case OP_CHECKDIV               : return "OP_CHECKDIV";
     case OP_CHECKLOCKTIMEVERIFY    : return "OP_CHECKLOCKTIMEVERIFY";
     case OP_CHECKSEQUENCEVERIFY    : return "OP_CHECKSEQUENCEVERIFY";
-    case OP_NOP4                   : return "OP_NOP4";
-    case OP_NOP5                   : return "OP_NOP5";
+    case OP_ANNOUNCE               : return "OP_ANNOUNCE";
+    case OP_ANNOUNCEVERIFY         : return "OP_ANNOUNCEVERIFY";
     case OP_NOP6                   : return "OP_NOP6";
     case OP_NOP7                   : return "OP_NOP7";
     case OP_NOP8                   : return "OP_NOP8";
