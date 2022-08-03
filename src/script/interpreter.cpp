@@ -705,6 +705,47 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                 case OP_ANNOUNCE:
                 {
 
+                    // OPCODE: ANNOUNCE
+                    //
+                    // Stack 
+                    //    Bounty_txn->ScriptOutPut:index  <- Top of stack element [36 bytes]
+                    //    Claim hash                      <- Second stack element [32 bytes]
+                    //
+                    // Perform:
+                    //    1. Burns the coins associated with this transaction.
+                    //    2. Indexes the following data Indexer[Claim hash] = [ Height, Coins Burned]
+                    //
+                    // Note 1: Claim Hash = sha256( T | Serialize(vout-of-claim-txn) )
+                    //         Where T is a divisor of number that has the bounty. (T need not be prime )
+                    //            
+                    // Note 2: This OPCODE's purpose, in conjuction with OP_ANNOUNCEVERIFY, is to protect 
+                    //         the claimant against miner-in-the-middle attacks, protect the blockchain against
+                    //         DoS attacks, stabilize the coin supply by burning coins in proportion to the utility
+                    //         of the coin, and to place restrictions such that it becomes prohibitively expensive to block
+                    //         participants who have found a solution from claiming a solution.
+                    //      
+                    // Note 3:  1) This op code is to announce a solution has been found to a number with a bounty.     
+                    //            1.a) You MUST use OP_ANNOUNCEVERIFY to claim the bounty and provide the actual solution.
+                    //            1.b) You MUST wait 100 blocks. Any attempts made before 100 blocks will be rejected by blockchain.
+                    //            1.c) You MUST claim before 672 blocks have passed. Announcement will be forgotten after this point.
+                    //          2) This op code will be executed with the following priority at redemption time by OP_ANNOUNCEVERIFY:
+                    //            2.a Announcements in blocks earlier than 672 blocks ago are not considered at all.
+                    //            2.b Announcements in blocks later   than 100 blocks ago are not considered at all.
+                    //            2.c Announcements in ealier blocks are considered first.
+                    //            2.d Announcements in the same block:     
+                    //                         2.d.i) ONLY the announcement(s) that burned the most coins get(s) considered.
+                    //                        2.d.ii) If there is(are) ties, the rewards get split evenly +/-1 satoshi.
+                    //                                If there are not enough satoshis for everyone to get at least 1 satoshi
+                    //                                then no rewards are given.
+                    // 
+                    //          In short, there may only be one announcement considered per block. The winner will in effect block
+                    //          every other announcement in that block from claiming the reward.
+                    //
+
+
+
+
+
                 } 
 
                 case OP_ANNOUNCEVERIFY:
