@@ -708,12 +708,13 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                     // OPCODE: ANNOUNCE
                     //
                     // Stack 
-                    //    Bounty_txn->ScriptOutPut:index  <- Top of stack element [36 bytes]
-                    //    Claim hash                      <- Second stack element [32 bytes]
+                    //    Bounty_txn->ScriptOutPut        <- Top of stack element [32 bytes]
+                    //    Bounty_txn->ScriptOutPutIndex   <- Second stack element [4 bytes]
+                    //    Claim hash                      <- Third  stack element [32 bytes]
                     //
                     // Perform:
                     //    1. Burns the coins associated with this transaction.
-                    //    2. Indexes the following data Indexer[Claim hash] = [ Height, Coins Burned]
+                    //    2. Indexes the following data Indexer[Claim hash] = [ Height, Coins Burned, ScriptOutIndex]
                     //
                     // Note 1: Claim Hash = sha256( T | Serialize(vout-of-claim-txn) )
                     //         Where T is a divisor of number that has the bounty. (T need not be prime )
