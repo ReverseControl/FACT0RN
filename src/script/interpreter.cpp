@@ -743,16 +743,35 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                     //          every other announcement in that block from claiming the reward.
                     //
 
+                    //Check there are at least two elements on the stack
+                    if (stack.size() < 2)
+                        return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
 
+                    //Retrieve P and do validation
+                    valtype& scriptOut = stacktop(-1);
+                    valtype& sOutIndex = stacktop(-2);
+                    valtype& claimHash = stacktop(-3);
 
+                    //Check the inputs have the exact number of bytes expected
+                    if ( scriptOut.size() != 32 )
+                        return set_error(serror, SCRIPT_ERR_INVALID_ANNOUNCEMENT_INPUT1 );
+                    if ( sOutIndex.size() != 4 )
+                        return set_error(serror, SCRIPT_ERR_INVALID_ANNOUNCEMENT_INPUT2 );
+                    if ( claimHash.size() != 32 )
+                        return set_error(serror, SCRIPT_ERR_INVALID_ANNOUNCEMENT_INPUT3 );
+
+                    //Extract integer from unsigned char vector.
+                    uint32_t index = ((uint32_t *)(&stacktop(-2)[0]))[0];
 
 
                 } 
+                break;
 
                 case OP_ANNOUNCEVERIFY:
                 {
     
                 }
+                break;
 
                 case OP_NOP6: case OP_NOP7: case OP_NOP8: case OP_NOP9: case OP_NOP10:
                 {
