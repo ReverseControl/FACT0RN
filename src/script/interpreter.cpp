@@ -706,22 +706,24 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                     // OPCODE: ANNOUNCE
                     //
                     // Stack 
-                    //    Bounty_txn->ScriptOutPut        <- Top of stack element [32 bytes]
-                    //    Bounty_txn->ScriptOutPutIndex   <- Second stack element [4 bytes]
-                    //    Claim hash                      <- Third  stack element [32 bytes]
+                    //    N                               <- Top of stack element [variable bytes]   
+                    //    Claim Hash                      <- Second stack element [32 bytes]
                     //
                     // Perform:
                     //    1. Burns the coins associated with this transaction.
-                    //    2. Indexes the following data Indexer[Claim hash] = [ Height, Coins Burned, ScriptOutIndex]
+                    //    2. Indexes the following data Indexer[N] = [ Height, Coins Burned, Claim Hash]
+                    //    3. Per height, per N, there is only one entry: the highest Coins Burned announcement wins.
+                    //    4. Miners may choose to break ties as they see fit.
                     //
-                    // Note 1: Claim Hash = sha256( T | Serialize(vout-of-claim-txn) )
-                    //         Where T is a divisor of number that has the bounty. (T need not be prime )
-                    //            
+                    // Note 1: Claim Hash = sha256( T || Serialize(vout-of-claim-txn) )
+                    //         Where T is a non-trivial divisor of N. (T need not be prime )
+                    //            and the symbol || means byte concatenation.
+                    //
                     // Note 2: This OPCODE's purpose, in conjuction with OP_ANNOUNCEVERIFY, is to protect 
                     //         the claimant against miner-in-the-middle attacks, protect the blockchain against
                     //         DoS attacks, stabilize the coin supply by burning coins in proportion to the utility
                     //         of the coin, and to place restrictions such that it becomes prohibitively expensive to block
-                    //         participants who have found a solution from claiming a solution.
+                    //         participants who have found a solution from claiming a solution fro an extended periof of time.
                     //      
                     // Note 3:  1) This op code is to announce a solution has been found to a number with a bounty.     
                     //            1.a) You MUST use OP_ANNOUNCEVERIFY to claim the bounty and provide the actual solution.
@@ -731,37 +733,39 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                     //            2.a Announcements in blocks earlier than 672 blocks ago are not considered at all.
                     //            2.b Announcements in blocks later   than 100 blocks ago are not considered at all.
                     //            2.c Announcements in ealier blocks are considered first.
-                    //            2.d Announcements in the same block:     
-                    //                         2.d.i) ONLY the announcement(s) that burned the most coins get(s) considered.
-                    //                        2.d.ii) If there is(are) ties, the rewards get split evenly +/-1 satoshi.
-                    //                                If there are not enough satoshis for everyone to get at least 1 satoshi
-                    //                                then no rewards are given.
                     // 
-                    //          In short, there may only be one announcement considered per block. The winner will in effect block
-                    //          every other announcement in that block from claiming the reward.
+                    //          In short, there may only be one announcement considered per block.
                     //
 
                     //Check there are at least two elements on the stack
                     if (stack.size() < 2)
                         return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
 
-                    //Retrieve P and do validation
-                    valtype& scriptOut = stacktop(-1);
-                    valtype& sOutIndex = stacktop(-2);
-                    valtype& claimHash = stacktop(-3);
+                    //Retrieve Claim-Hash
+                    valtype& claimHash = stacktop(-2);
 
                     //Check the inputs have the exact number of bytes expected
-                    if ( scriptOut.size() != 32 )
-                        return set_error(serror, SCRIPT_ERR_INVALID_ANNOUNCEMENT_INPUT1 );
-                    if ( sOutIndex.size() != 4 )
-                        return set_error(serror, SCRIPT_ERR_INVALID_ANNOUNCEMENT_INPUT2 );
                     if ( claimHash.size() != 32 )
-                        return set_error(serror, SCRIPT_ERR_INVALID_ANNOUNCEMENT_INPUT3 );
+                        return set_error(serror, SCRIPT_ERR_INVALID_ANNOUNCEMENT_CLAIMHASH_SIZE );
 
-                    //Extract integer from unsigned char vector.
-                    uint32_t index = ((uint32_t *)(&stacktop(-2)[0]))[0];
+                    //Retrieve N
+                    mpz_t n;
+                    mpz_init(n);
+                    mpz_import( n, stacktop(-1).size(), -1, sizeof(char), 0, 0, &(stacktop(-1)[0]));
+
+                    ///////////////////////////////////////////////////////
+                    //      The actual implementation goes here.         //
+                    //                    TODO.                          //
+                    //                                                   //
+                    //                                                   //
+                    ///////////////////////////////////////////////////////
 
 
+
+
+                    //Cleanup
+                    mpz_clear(n);
+                    popstack(stack);
                 } 
                 break;
 
