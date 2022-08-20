@@ -633,8 +633,8 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                     // OPCODE: Check Divisor
                     //
                     // Stack 
-                    //    P <- Top stack element
-                    //    N <- Second stack element
+                    //    N <- Top stack element
+                    //    P <- Second stack element
                     //
                     // Perform:
                     //    N Mod P -- return 1 if N Mod P == 0 else return 0
@@ -696,8 +696,6 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                     //Update stack
                     std::vector<unsigned char> ret (1, retValue);
                     
-                    popstack(stack);
-                    popstack(stack);
                     stack.push_back( ret );
                 }
                 break;
