@@ -772,6 +772,70 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                 case OP_ANNOUNCEVERIFY:
                 {
     
+                    // OPCODE: ANNOUNCEVERIFY
+                    //
+                    // Stack:
+                    //    N            <- Top of stack.        [ Limited by Script Restriction to 512 bytes (  0 <= T < 2^4096) ]
+                    //    T            <- Second stack element [ Limited by Script Restriction to 512 bytes (  0 <= T < 2^4096) ]
+                    //    Claim Hash   <- Third  stack element [32 bytes]
+                    //    Vout-Hash    <- Fourth stack element [32 bytes]
+                    //
+                    //  Note 1: The following valdiation checks are done:
+                    //              1) SHA256( T || Hash-vout-of-claim-txn ) == Claim Hash
+                    //              2) Check that Claim-hash is in the index.
+                    //              3) Is this txn after 100 blocks of the announcement block?
+                    //              4) Is this txn within 672 blocks of the announcement block?
+                    //             
+                    // 
+                    //  Note 2: The full ScriptPubKey + ScripSig should look like this:
+                    //                 
+                    //          Claim-Hash     |
+                    //          Vout-Hash      | ScriptSig
+                    //          T              |
+                    //          N                     |
+                    //          OP_CHECKDIV           | ScriptPubKey.
+                    //          OP_VERIFY             |
+                    //          OP_ANNOUNCE_VERIFY    |
+                    //  
+                    //  Note 3: If OP_ANNOUNCE was never used, your right to claim will fail in OP_ANNOUNCE_VERIFY.   
+                    if (stack.size() < 4)
+                        return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
+
+                    //Retrieve P and do validation
+                    mpz_t p;
+                    mpz_init(p);
+                    mpz_import( p, stacktop(-2).size(), -1, sizeof(char), 0, 0, &(stacktop(-2)[0]) );
+
+                    //Retrieve N
+                    mpz_t n;
+                    mpz_init(n);
+                    mpz_import( n, stacktop(-1).size(), -1, sizeof(char), 0, 0, &(stacktop(-1)[0]));
+
+                    //Retrieve Claim-Hash
+                    valtype& claimHash = stacktop(-3);
+                    valtype& voutHash  = stacktop(-4);
+
+                    //Check the inputs have the exact number of bytes expected
+                    if ( claimHash.size() != 32 )
+                        return set_error(serror, SCRIPT_ERR_INVALID_ANNOUNCEMENT_CLAIMHASH_SIZE );
+                    if ( voutHash.size() != 32 )
+                        return set_error(serror, SCRIPT_ERR_INVALID_ANNOUNCEMENT_VOUTHASH_SIZE );
+  
+
+                    ///////////////////////////////////////////////////////
+                    //      The actual implementation goes here.         //
+                    //                    TODO.                          //
+                    //                                                   //
+                    //                                                   //
+                    ///////////////////////////////////////////////////////
+
+                    //Cleanup
+                    mpz_clear(n);
+                    mpz_clear(p);
+                    popstack(stack);
+                    popstack(stack);
+                    popstack(stack);
+                    popstack(stack);
                 }
                 break;
 
