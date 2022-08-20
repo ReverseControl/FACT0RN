@@ -117,12 +117,10 @@ std::string ScriptErrorString(const ScriptError serror)
             return "Signature is found in scriptCode";
         case SCRIPT_ERR_OP_CHECKDIV:
             return "Only one OP_CHECKDIV is allowed per script.";
-        case SCRIPT_ERR_INVALID_ANNOUNCEMENT_INPUT1:
-            return "OP_ANNOUNCE scriptOut argument MUST be 32 bytes";
-        case SCRIPT_ERR_INVALID_ANNOUNCEMENT_INPUT2:
-            return "OP_ANNOUNCE scriptOutIndex argument MUST be 4 bytes";
-        case SCRIPT_ERR_INVALID_ANNOUNCEMENT_INPUT3:
-            return "OP_ANNOUNCE claim-hash argument MUST be 32 bytes";
+        case SCRIPT_ERR_INVALID_ANNOUNCEMENT_CLAIMHASH_SIZE:
+            return "OP_ANNOUNCE Claim-Hash argument MUST be 32 bytes";
+        case SCRIPT_ERR_INVALID_ANNOUNCEMENT_VOUTHASH_SIZE:
+            return "OP_ANNOUNCE Vout-Hash argument MUST be 32 bytes";
         case SCRIPT_ERR_UNKNOWN_ERROR:
         case SCRIPT_ERR_ERROR_COUNT:
         default: break;
